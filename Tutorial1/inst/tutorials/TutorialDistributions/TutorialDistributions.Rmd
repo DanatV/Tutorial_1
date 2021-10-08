@@ -1,0 +1,116 @@
+---
+title: "Your First R Tutorial"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(readr)
+library(ggplot2)
+library(summarytools)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+This interactive tutorial provides a gentle introduction to the capabilities of R, a software environment for statistical computing and analysis. We shall look into different ways to visualise statistical distributions. The focus of this session on datasets commonly used in political science. Specifically, we wil utilise elections data from an autocratic country and a country with established institutions of participatory democracy. Using relatively straightforward analytical and visualisation tools, we shall spots interesting abnormalities in the distribution of the election data and will try to explain them.
+
+We will use ggplot2, a highly versatile package for data visualisation in R. (https://ggplot2.tidyverse.org).
+
+
+## Statistical distributions: General election data
+
+Four datasets have been uploaded for this tutorial: two datasets from an autocratic country (in wide and long formats) and two datasets from the 2016 US presidential election (in wide and long formats). The data objects have been created and labelled as follows:
+
+1. Autocratic country data in wide format - data_election_one
+2. Autocratic country data in long format - data_election (in long format, opposition election results are recorded in a spreadsheet below the results for the ruling party, with a unique grouping variable to identify which records belong to the opposition and which to the ruling party).
+3. US data in wide format - data_usa_one
+4. US data in long format - data_usa
+
+
+We begin with getting an overall impression of the structure of the data. In R, command str () provides the basic information about the dataset: the number of observations and variables, variable description (measurement scales); it also prints the first ten observations for each variable.
+
+```{r structure, exercise=TRUE}
+str(data_election_one)
+```
+
+The output above shows that the election dataset has 96871 observations from polling stations across 8 variables: polling station ID, the absolute number of all registered voters and valid ballots, voter turnout in percentages, the absolute number of votes and their share in percentages given to the ruling party and opposition parties.
+
+Command head() can be used to show the first 6 rows of the data in a matrix (spreadsheet) format.
+
+```{r head, exercise=TRUE}
+head(data_election_one)
+```
+
+
+We can look at descriptive statistics in more detail by using command 'descr' from package 'summarytools' (follow this link for a detailed introduction to the package - https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html). Command 'descr' can be applied to continuous or binary data. If we had been dealing with categorical data we would have used command 'freq'. 
+
+```{r descr, exercise=TRUE}
+descr(data_election_one)
+```
+
+The output above returns mean, standard deviation, median, interquartile range and other measures of central tendency and dispersion including skewness and kurtosis of the probability distribution.
+
+## Visualising distributions
+
+We aim to analyse the probability distribution of the key variables in the election dataset: share of votes given to the ruling (opposition) party and voter turnout. 
+
+HOW DO YOU EXPECT THESE DISTRIBUTIONS TO LOOK? What is the rationale for that?
+
+```{r freq, exercise=TRUE}
+ggplot(data_election_one, aes(x=Ruling_party_vote_share))+theme_bw()+
+  theme(text=element_text(size=16))+
+ geom_freqpoly(size=2,binwidth=1)
+```
+
+We have visualised the distribution of the vote share of the ruling party. Does it match your original expectation? CAN YOU SEE ANY IRREGULARITIES IN THE ABOVE GRAPH?
+
+Let's now delve deeper into the election data and check the distribution of voters turnout. The question here is the same: IN THEORY, HOW SHOULD THIS DISTRIBUTION LOOK?
+
+CAN YOU ADJUST THE SYNTAX ABOVE TO SHOW THE DISTRIBUTION OF VOTERS TURNOUT?
+
+<div id="freq-plot-1-hint">
+**Hint:** What part of syntax refers to a specific variable? Get back to the str() or head() commands to find the name of the variable that you need to plot.
+</div>
+
+```{r freq-solution}
+ggplot(data_election_one, aes(x=Voter_turnout))+theme_bw()+theme(text=element_text(size=16))+
+ geom_freqpoly(size=2, binwidth=1)
+```
+
+
+Let us weight our original voting distribution by voter turnout, to see whether the shape of the curve changes depending on the proportion of electorate who showed up at the polling stations and sucessfully cast their vote. This can be done with some minor adjustments to the syntax we used before (see the code below). 
+
+```{r freq-plot-2, exercise=TRUE}
+ggplot(data_election_one, aes(x=Ruling_party_vote_share))+theme_bw()+
+  theme(text=element_text(size=16))+
+ geom_freqpoly(aes(weight = Voter_turnout), binwidth = 1,size=2)
+```
+
+It does seem that adjusted to voter turnout, the share of votes of the ruling party deviated further from normal distribution. What does this distribution mean for the average result relative to the median score?
+
+```{r freq-plot-3, exercise=TRUE}
+ggplot(data_election_one, aes(x=Ruling_party_vote_share))+theme_bw()+
+  theme(text=element_text(size=16))+
+  geom_freqpoly(aes(weight = Voter_turnout), binwidth = 1,size=2)+geom_vline(aes(xintercept=mean(Ruling_party_vote_share)),
+               color="red", linetype="dashed", size=2)+geom_vline(aes(xintercept=median(Ruling_party_vote_share)),
+               color="blue", linetype="dashed", size=2)
+```
+
+
+What can explain these results? Let us visualise the extent to which voting depends on voter turnout. A graph called scatter plot enabled us to see that with the increasing voter turnover votes for the ruling party increase too. This is particularly relevant when turnout exceeds 50 per cent. 
+
+WHY IS THIS REGULARITY STATISTICALLY IMPLAUSIBLE IN AN ORDINARY ElECTION PROCESS?
+
+
+```{r scatter, exercise=TRUE}
+ggplot(data_election, aes(x=Voter_turnout,y=Vote_share,colour=Party))+
+  theme_bw()+theme(text=element_text(size=16))+
+  geom_point(size=0.5)
+```
+
+
+
+This session emphasised the importance of understanding statistical distributions and being able to visualise them. We have shown how this knowledge can be applied to identify irregularities in election data. 
+
+TRY TO USE THE CODE WE RELIED ON SO FAR TO VISUALISE THE DISTRIBUTION OF THE US DATA.
